@@ -1,0 +1,12 @@
+[workspace]
+resolver = "3"
+members = ["engine", "raster"]
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+debug-assertions = false
+codegen-units = 1
+lto = true
+panic = "abort"
