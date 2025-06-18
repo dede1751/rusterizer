@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 raster = { path = "../raster" }
-raylib = "5.5.1"
+minifb = "0.28"
