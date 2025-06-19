@@ -1,6 +1,6 @@
 use crate::primitives::VectorOps;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Float3 {
     pub x: f32,
     pub y: f32,
@@ -13,21 +13,21 @@ macro_rules! impl_math_ops {
         $(
             impl std::ops::$trait for Float3 {
                 type Output = Self;
-                fn $fn(self, other: Self) -> Self::Output {
+                fn $fn(self, rhs: Self) -> Self::Output {
                     Self::new(
-                        std::ops::$trait::$fn(self.x, other.x),
-                        std::ops::$trait::$fn(self.y, other.y),
-                        std::ops::$trait::$fn(self.z, other.z),
+                        std::ops::$trait::$fn(self.x, rhs.x),
+                        std::ops::$trait::$fn(self.y, rhs.y),
+                        std::ops::$trait::$fn(self.z, rhs.z),
                     )
                 }
             }
             impl std::ops::$trait<f32> for Float3 {
                 type Output = Self;
-                fn $fn(self, other: f32) -> Self::Output {
+                fn $fn(self, rhs: f32) -> Self::Output {
                     Self::new(
-                        std::ops::$trait::$fn(self.x, other),
-                        std::ops::$trait::$fn(self.y, other),
-                        std::ops::$trait::$fn(self.z, other),
+                        std::ops::$trait::$fn(self.x, rhs),
+                        std::ops::$trait::$fn(self.y, rhs),
+                        std::ops::$trait::$fn(self.z, rhs),
                     )
                 }
             }
@@ -40,17 +40,17 @@ macro_rules! impl_math_assign_ops {
     ($($trait:ident::$fn:ident),*) => {
         $(
             impl std::ops::$trait for Float3 {
-                fn $fn(&mut self, other: Self) {
-                    std::ops::$trait::$fn(&mut self.x, other.x);
-                    std::ops::$trait::$fn(&mut self.y, other.y);
-                    std::ops::$trait::$fn(&mut self.z, other.z);
+                fn $fn(&mut self, rhs: Self) {
+                    std::ops::$trait::$fn(&mut self.x, rhs.x);
+                    std::ops::$trait::$fn(&mut self.y, rhs.y);
+                    std::ops::$trait::$fn(&mut self.z, rhs.z);
                 }
             }
             impl std::ops::$trait<f32> for Float3 {
-                fn $fn(&mut self, other: f32) {
-                    std::ops::$trait::$fn(&mut self.x, other);
-                    std::ops::$trait::$fn(&mut self.y, other);
-                    std::ops::$trait::$fn(&mut self.z, other);
+                fn $fn(&mut self, rhs: f32) {
+                    std::ops::$trait::$fn(&mut self.x, rhs);
+                    std::ops::$trait::$fn(&mut self.y, rhs);
+                    std::ops::$trait::$fn(&mut self.z, rhs);
                 }
             }
         )*
@@ -102,15 +102,15 @@ impl VectorOps for Float3 {
         Float3::ZERO
     }
 
-    fn dot(self, other: Self) -> f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+    fn dot(self, rhs: Self) -> f32 {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
-    fn cross(self, other: Self) -> Self {
+    fn cross(self, rhs: Self) -> Self {
         Float3::new(
-            self.y * other.z - self.z * other.y,
-            self.z * other.x - self.x * other.z,
-            self.x * other.y - self.y * other.x,
+            self.y * rhs.z - self.z * rhs.y,
+            self.z * rhs.x - self.x * rhs.z,
+            self.x * rhs.y - self.y * rhs.x,
         )
     }
 }

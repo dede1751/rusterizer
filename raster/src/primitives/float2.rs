@@ -1,6 +1,6 @@
 use crate::primitives::{VectorOps, float3::Float3};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Float2 {
     pub x: f32,
     pub y: f32,
@@ -12,19 +12,19 @@ macro_rules! impl_math_ops {
         $(
             impl std::ops::$trait for Float2 {
                 type Output = Self;
-                fn $fn(self, other: Self) -> Self::Output {
+                fn $fn(self, rhs: Self) -> Self::Output {
                     Self::new(
-                        std::ops::$trait::$fn(self.x, other.x),
-                        std::ops::$trait::$fn(self.y, other.y),
+                        std::ops::$trait::$fn(self.x, rhs.x),
+                        std::ops::$trait::$fn(self.y, rhs.y),
                     )
                 }
             }
             impl std::ops::$trait<f32> for Float2 {
                 type Output = Self;
-                fn $fn(self, other: f32) -> Self::Output {
+                fn $fn(self, rhs: f32) -> Self::Output {
                     Self::new(
-                        std::ops::$trait::$fn(self.x, other),
-                        std::ops::$trait::$fn(self.y, other),
+                        std::ops::$trait::$fn(self.x, rhs),
+                        std::ops::$trait::$fn(self.y, rhs),
                     )
                 }
             }
@@ -37,15 +37,15 @@ macro_rules! impl_math_assign_ops {
     ($($trait:ident::$fn:ident),*) => {
         $(
             impl std::ops::$trait for Float2 {
-                fn $fn(&mut self, other: Self) {
-                    std::ops::$trait::$fn(&mut self.x, other.x);
-                    std::ops::$trait::$fn(&mut self.y, other.y);
+                fn $fn(&mut self, rhs: Self) {
+                    std::ops::$trait::$fn(&mut self.x, rhs.x);
+                    std::ops::$trait::$fn(&mut self.y, rhs.y);
                 }
             }
             impl std::ops::$trait<f32> for Float2 {
-                fn $fn(&mut self, other: f32) {
-                    std::ops::$trait::$fn(&mut self.x, other);
-                    std::ops::$trait::$fn(&mut self.y, other);
+                fn $fn(&mut self, rhs: f32) {
+                    std::ops::$trait::$fn(&mut self.x, rhs);
+                    std::ops::$trait::$fn(&mut self.y, rhs);
                 }
             }
         )*
@@ -95,14 +95,14 @@ impl VectorOps for Float2 {
         Float2::ZERO
     }
 
-    fn dot(self, other: Self) -> f32 {
-        self.x * other.x + self.y * other.y
+    fn dot(self, rhs: Self) -> f32 {
+        self.x * rhs.x + self.y * rhs.y
     }
 
-    fn cross(self, other: Self) -> Self {
+    fn cross(self, rhs: Self) -> Self {
         Float2::new(
-            self.x * other.y - self.y * other.x,
-            self.y * other.x - self.x * other.y,
+            self.x * rhs.y - self.y * rhs.x,
+            self.y * rhs.x - self.x * rhs.y,
         )
     }
 }
@@ -119,5 +119,24 @@ impl Float2 {
 
     pub const fn from_float3(v: Float3) -> Self {
         Float2::new(v.x, v.y)
+    }
+
+    pub const fn perpendicular(self) -> Self {
+        Float2::new(-self.y, self.x)
+    }
+
+    pub fn right_side(self, a: Float2, b: Float2) -> bool {
+        let abperp = (b - a).perpendicular();
+        let ap = self - a;
+
+        abperp.dot(ap) >= 0.0
+    }
+
+    pub fn in_triangle(self, a: Float2, b: Float2, c: Float2) -> bool {
+        let sideab = self.right_side(a, b);
+        let sidebc = self.right_side(b, c);
+        let sideca = self.right_side(c, a);
+
+        sideab == sidebc && sidebc == sideca
     }
 }

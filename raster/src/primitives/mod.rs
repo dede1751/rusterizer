@@ -2,10 +2,12 @@ use std::ops::{Add, Div, Mul, Sub};
 
 pub mod float2;
 pub mod float3;
+pub mod quat;
 pub mod transform;
 
 pub use float2::Float2;
 pub use float3::Float3;
+pub use quat::Quaternion;
 pub use transform::Transform;
 
 // Simple dot-product based vector operations (works for both Float2 and Float3)
@@ -19,9 +21,9 @@ pub trait VectorOps:
 {
     fn zero() -> Self;
 
-    fn dot(self, other: Self) -> f32;
+    fn dot(self, rhs: Self) -> f32;
 
-    fn cross(self, other: Self) -> Self;
+    fn cross(self, rhs: Self) -> Self;
 
     fn sqr_magnitude(self) -> f32 {
         self.dot(self)
@@ -31,13 +33,13 @@ pub trait VectorOps:
         self.sqr_magnitude().sqrt()
     }
 
-    fn normalize(self) -> Self {
+    fn normalized(self) -> Self {
         let len = self.length();
         if len == 0.0 { Self::zero() } else { self / len }
     }
 
-    fn lerp(self, other: Self, t: f32) -> Self {
+    fn lerp(self, rhs: Self, t: f32) -> Self {
         let t = t.clamp(0.0, 1.0);
-        self + (other - self) * t
+        self + (rhs - self) * t
     }
 }
