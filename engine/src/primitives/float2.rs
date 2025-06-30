@@ -1,4 +1,4 @@
-use crate::primitives::{VectorOps, float3::Float3};
+use crate::primitives::VectorOps;
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Float2 {
@@ -98,13 +98,6 @@ impl VectorOps for Float2 {
     fn dot(self, rhs: Self) -> f32 {
         self.x * rhs.x + self.y * rhs.y
     }
-
-    fn cross(self, rhs: Self) -> Self {
-        Float2::new(
-            self.x * rhs.y - self.y * rhs.x,
-            self.y * rhs.x - self.x * rhs.y,
-        )
-    }
 }
 
 impl Float2 {
@@ -117,26 +110,7 @@ impl Float2 {
         Float2 { x, y }
     }
 
-    pub const fn from_float3(v: Float3) -> Self {
-        Float2::new(v.x, v.y)
-    }
-
-    pub const fn perpendicular(self) -> Self {
-        Float2::new(-self.y, self.x)
-    }
-
-    pub fn right_side(self, a: Float2, b: Float2) -> bool {
-        let abperp = (b - a).perpendicular();
-        let ap = self - a;
-
-        abperp.dot(ap) >= 0.0
-    }
-
-    pub fn in_triangle(self, a: Float2, b: Float2, c: Float2) -> bool {
-        let sideab = self.right_side(a, b);
-        let sidebc = self.right_side(b, c);
-        let sideca = self.right_side(c, a);
-
-        sideab == sidebc && sidebc == sideca
+    pub const fn signed_area(a: Float2, b: Float2, c: Float2) -> f32 {
+        (c.x - a.x) * (b.y - a.y) + (c.y - a.y) * (a.x - b.x)
     }
 }

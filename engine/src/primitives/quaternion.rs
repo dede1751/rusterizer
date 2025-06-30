@@ -152,16 +152,12 @@ mod tests {
     use super::*;
     use std::f32::consts::FRAC_PI_2; // 90 degrees in radians
 
-    fn approx_eq(a: Float3, b: Float3, eps: f32) -> bool {
-        (a - b).length() < eps
-    }
-
     #[test]
     fn test_identity() {
         let q = Quaternion::IDENTITY;
         let v = Float3::new(1.0, 2.0, 3.0);
         let rotated = q * v;
-        assert!(approx_eq(rotated, v, 1e-5));
+        assert!(VectorOps::approx_eq(rotated, v, 1e-5));
     }
 
     #[test]
@@ -169,7 +165,10 @@ mod tests {
         let q = Quaternion::from_y_angle(FRAC_PI_2);
         let q_inv = q.inverse();
         let identity = (q * q_inv).normalized();
-        assert!(approx_eq(identity.into(), Float3::ZERO, 1e-5) || (identity.w - 1.0).abs() < 1e-5);
+        assert!(
+            VectorOps::approx_eq(identity.into(), Float3::ZERO, 1e-5)
+                || (identity.w - 1.0).abs() < 1e-5
+        );
     }
 
     #[test]
@@ -180,7 +179,7 @@ mod tests {
 
         let r1 = (qy * qx) * v;
         let r2 = qy * (qx * v);
-        assert!(approx_eq(r1, r2, 1e-5));
+        assert!(VectorOps::approx_eq(r1, r2, 1e-5));
     }
 
     #[test]
@@ -188,15 +187,27 @@ mod tests {
         let p = Float3::new(2.0, 0.0, 0.0);
         let qz = Quaternion::from_z_angle(FRAC_PI_2);
         let rotated = qz * p;
-        assert!(approx_eq(rotated, Float3::new(0.0, 2.0, 0.0), 1e-5));
+        assert!(VectorOps::approx_eq(
+            rotated,
+            Float3::new(0.0, 2.0, 0.0),
+            1e-5
+        ));
 
         let qx = Quaternion::from_x_angle(FRAC_PI_2);
         let rotated = qx * rotated;
-        assert!(approx_eq(rotated, Float3::new(0.0, 0.0, 2.0), 1e-5));
+        assert!(VectorOps::approx_eq(
+            rotated,
+            Float3::new(0.0, 0.0, 2.0),
+            1e-5
+        ));
 
         let qy = Quaternion::from_y_angle(-FRAC_PI_2);
         let rotated = qy * rotated;
-        assert!(approx_eq(rotated, Float3::new(-2.0, 0.0, 0.0), 1e-5));
+        assert!(VectorOps::approx_eq(
+            rotated,
+            Float3::new(-2.0, 0.0, 0.0),
+            1e-5
+        ));
     }
 
     #[test]
@@ -225,8 +236,8 @@ mod tests {
         let r0 = q1.slerp(q2, 0.0) * p;
         let r1 = q1.slerp(q2, 1.0) * p;
 
-        assert!(approx_eq(r0, q1 * p, 1e-5));
-        assert!(approx_eq(r1, q2 * p, 1e-5));
+        assert!(VectorOps::approx_eq(r0, q1 * p, 1e-5));
+        assert!(VectorOps::approx_eq(r1, q2 * p, 1e-5));
     }
 
     #[test]
@@ -241,7 +252,7 @@ mod tests {
         let sqrt2_over_2 = (2.0f32).sqrt() / 2.0;
         let expected = Float3::new(sqrt2_over_2, sqrt2_over_2, 0.0);
 
-        assert!(approx_eq(rotated, expected, 1e-5));
+        assert!(VectorOps::approx_eq(rotated, expected, 1e-5));
     }
 
     #[test]

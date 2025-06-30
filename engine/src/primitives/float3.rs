@@ -105,14 +105,6 @@ impl VectorOps for Float3 {
     fn dot(self, rhs: Self) -> f32 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
-
-    fn cross(self, rhs: Self) -> Self {
-        Float3::new(
-            self.y * rhs.z - self.z * rhs.y,
-            self.z * rhs.x - self.x * rhs.z,
-            self.x * rhs.y - self.y * rhs.x,
-        )
-    }
 }
 
 impl Float3 {
@@ -134,5 +126,13 @@ impl Float3 {
         let b = (self.z.clamp(0.0, 1.0) * 255.0) as u32;
 
         b | (g << 8) | (r << 16)
+    }
+
+    pub const fn cross(self, rhs: Self) -> Self {
+        Float3::new(
+            self.y * rhs.z - self.z * rhs.y,
+            self.z * rhs.x - self.x * rhs.z,
+            self.x * rhs.y - self.y * rhs.x,
+        )
     }
 }
