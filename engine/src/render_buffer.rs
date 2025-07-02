@@ -17,18 +17,28 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for RenderBuffer<WIDTH, HE
 impl<const WIDTH: usize, const HEIGHT: usize> RenderBuffer<WIDTH, HEIGHT> {
     pub fn test_frame(t: f32) -> Self {
         let mut buffer: RenderBuffer<WIDTH, HEIGHT> = RenderBuffer::default();
+        let color = Float3::new(((t * 50.0) % 255.0) / 255.0, 0.0, 0.0);
         for y in 0..HEIGHT {
             for x in 0..WIDTH {
                 let idx = y * WIDTH + x;
-                buffer.color[idx] = Float3::new((t % 255.0) / 255.0, 0.0, 0.0); // Red color
+                buffer.color[idx] = color;
             }
         }
         buffer
     }
 
-    pub fn to_minifb(&self, minifb_buffer: &mut [u32]) {
-        for (i, pixel) in minifb_buffer.iter_mut().enumerate() {
-            *pixel = self.color[i].to_minifb_rgb();
+    pub fn to_rgba_bytes(&self, minifb_buffer: &mut [u8]) {
+        assert_eq!(
+            minifb_buffer.len(),
+            WIDTH * HEIGHT * 4,
+            "Buffer size mismatch"
+        );
+        for (i, pixel) in minifb_buffer.chunks_exact_mut(4).enumerate() {
+            let (r, g, b, a) = self.color[i].to_rgba_bytes();
+            pixel[0] = r; // R
+            pixel[1] = g; // G
+            pixel[2] = b; // B
+            pixel[3] = a; // A
         }
     }
 

@@ -118,14 +118,13 @@ impl Float3 {
         Float3 { x, y, z }
     }
 
-    // Convert from Float3 to minifb RGB format
-    // Clamps values to [0.0, 1.0] range and converts to u32
-    pub const fn to_minifb_rgb(self) -> u32 {
-        let r = (self.x.clamp(0.0, 1.0) * 255.0) as u32;
-        let g = (self.y.clamp(0.0, 1.0) * 255.0) as u32;
-        let b = (self.z.clamp(0.0, 1.0) * 255.0) as u32;
+    // Convert from Float3 to ARGB format (a, r)
+    pub const fn to_rgba_bytes(self) -> (u8, u8, u8, u8) {
+        let r = (self.x.clamp(0.0, 1.0) * 255.0) as u8;
+        let g = (self.y.clamp(0.0, 1.0) * 255.0) as u8;
+        let b = (self.z.clamp(0.0, 1.0) * 255.0) as u8;
 
-        b | (g << 8) | (r << 16)
+        (r, g, b, 255)
     }
 
     pub const fn cross(self, rhs: Self) -> Self {
