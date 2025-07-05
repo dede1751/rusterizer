@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 engine = { path = "../engine" }
+rayon = "1.10.0"

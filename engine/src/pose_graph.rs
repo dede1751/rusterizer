@@ -21,7 +21,7 @@ impl PoseGraph {
         Rc::new(RefCell::new(root))
     }
 
-    pub fn new(name: &str, parent: &SharedPGNode) -> SharedPGNode {
+    pub fn new(name: &str, parent: SharedPGNode) -> SharedPGNode {
         let mut node = PoseGraph {
             name: name.to_string(),
             ..Default::default()
@@ -31,8 +31,8 @@ impl PoseGraph {
     }
 
     // Sets the parent. There is no explicit cycle avoidance here!
-    pub fn set_parent(&mut self, parent: &SharedPGNode) -> &mut Self {
-        self.parent = Some(Rc::clone(parent));
+    pub fn set_parent(&mut self, parent: SharedPGNode) -> &mut Self {
+        self.parent = Some(parent);
         self
     }
 
@@ -89,12 +89,12 @@ mod tests {
     fn test_round_trip() {
         let root = PoseGraph::root();
 
-        let t1 = PoseGraph::new("t1", &root);
+        let t1 = PoseGraph::new("t1", root.clone());
         t1.borrow_mut()
             .apply_scale(Float3::new(1.0, 3.0, 0.5))
             .apply_rotation(Quaternion::from_x_angle(FRAC_PI_2));
 
-        let t2 = PoseGraph::new("t2", &t1);
+        let t2 = PoseGraph::new("t2", t1.clone());
         t2.borrow_mut()
             .apply_translation(Float3::new(-2.0, 0.0, 3.2))
             .apply_rotation(Quaternion::from_z_angle(-FRAC_PI_2));
@@ -109,15 +109,15 @@ mod tests {
 
     #[test]
     fn test_mesh_to_cam() {
-        let world = PoseGraph::root();
+        let root = PoseGraph::root();
 
-        let mesh = PoseGraph::new("mesh", &world);
+        let mesh = PoseGraph::new("mesh", root.clone());
         mesh.borrow_mut()
             .apply_scale(Float3::new(2.0, 2.0, 2.0))
             .apply_translation(Float3::new(1.0, 0.0, 0.0))
             .apply_rotation(Quaternion::from_y_angle(FRAC_PI_2));
 
-        let cam = PoseGraph::new("cam", &world);
+        let cam = PoseGraph::new("cam", root.clone());
         cam.borrow_mut()
             .apply_translation(Float3::new(-1.0, 0.0, 0.0));
 

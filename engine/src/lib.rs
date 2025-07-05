@@ -7,3 +7,4 @@ pub mod primitives;
 pub mod render_buffer;
 pub mod scene;
 pub mod shader;
+pub mod texture;

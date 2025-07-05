@@ -110,6 +110,10 @@ impl Float2 {
         Float2 { x, y }
     }
 
+    pub fn floor(self) -> Self {
+        Float2::new(self.x.floor(), self.y.floor())
+    }
+
     pub const fn signed_area(a: Float2, b: Float2, c: Float2) -> f32 {
         (c.x - a.x) * (b.y - a.y) + (c.y - a.y) * (a.x - b.x)
     }

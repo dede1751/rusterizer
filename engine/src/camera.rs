@@ -2,16 +2,16 @@ use crate::primitives::{Float2, Float3, Tri};
 
 // Abstract camera model (fully sync)
 // FOV is in radians for perspective cameras, scale for orthographic cameras
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct CameraModel<const WIDTH: usize, const HEIGHT: usize> {
     fov: f32,
     perspective: bool,
 }
 
 impl<const WIDTH: usize, const HEIGHT: usize> CameraModel<WIDTH, HEIGHT> {
-    pub fn perspective(fov: f32) -> Self {
+    pub fn perspective(fov_deg: f32) -> Self {
         Self {
-            fov,
+            fov: f32::to_radians(fov_deg),
             perspective: true,
         }
     }
@@ -48,15 +48,13 @@ mod tests {
     use super::*;
     use crate::pose_graph::{PoseGraph, SharedPGNode};
 
-    use std::f32::consts::FRAC_PI_2; // 90 degrees in radians
-
     const WIDTH: usize = 800;
     const HEIGHT: usize = 600;
 
     fn setup_pg() -> (SharedPGNode, SharedPGNode) {
         let root = PoseGraph::root();
-        let cam = PoseGraph::new("cam", &root);
-        let mesh = PoseGraph::new("mesh", &root);
+        let cam = PoseGraph::new("cam", root.clone());
+        let mesh = PoseGraph::new("mesh", root.clone());
 
         cam.borrow_mut()
             .apply_translation(Float3::new(0.0, 0.0, -1.0));
@@ -69,7 +67,7 @@ mod tests {
 
     #[test]
     fn perspective_cam_project_center() {
-        let cam = CameraModel::<WIDTH, HEIGHT>::perspective(FRAC_PI_2);
+        let cam = CameraModel::<WIDTH, HEIGHT>::perspective(45.0);
         let cam_pose = PoseGraph::root();
         let world_to_cam = cam_pose.borrow().transform;
 
@@ -91,7 +89,7 @@ mod tests {
 
     #[test]
     fn perspective_cam_project_offset() {
-        let cam = CameraModel::<WIDTH, HEIGHT>::perspective(FRAC_PI_2);
+        let cam = CameraModel::<WIDTH, HEIGHT>::perspective(45.0);
         let (cam_pose, mesh) = setup_pg();
         let mesh_to_cam = PoseGraph::relative_transform(&mesh, &cam_pose);
 

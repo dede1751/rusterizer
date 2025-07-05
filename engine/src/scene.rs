@@ -7,15 +7,17 @@ use crate::render_buffer::RenderBuffer;
 
 use raylib::prelude::*;
 
-#[derive(Debug, Clone)]
+use std::collections::HashMap;
+
+#[derive(Debug, Default)]
 pub struct SceneData<const WIDTH: usize, const HEIGHT: usize> {
-    pub entities: Vec<Entity>,
+    pub entities: HashMap<String, Entity>,
     pub cam_model: CameraModel<WIDTH, HEIGHT>,
     pub cam_pose: SharedPGNode,
 }
 
 pub trait Scene<const WIDTH: usize, const HEIGHT: usize> {
-    fn update_state(&mut self, delta: f32, rl: &mut Input);
+    fn update_state(&mut self, delta: f32, input: &mut Input);
 
     fn render(&mut self, buffer: &mut RenderBuffer<WIDTH, HEIGHT>);
 
@@ -36,22 +38,17 @@ pub trait Scene<const WIDTH: usize, const HEIGHT: usize> {
             self.update_state(delta, &mut input);
             self.render(&mut render_buffer);
 
-            render_buffer.to_rgba_bytes(&mut frame_buffer);
+            render_buffer.to_rgba_buffer(&mut frame_buffer);
             texture.update_texture(&frame_buffer).unwrap();
 
             let mut d = rl.begin_drawing(&thread);
-            let src = Rectangle {
-                x: 0.0,
-                y: 0.0,
-                width: WIDTH as f32,
-                height: HEIGHT as f32,
-            };
-            let dest = Rectangle {
-                x: 0.0,
-                y: 0.0,
-                width: d.get_screen_width() as f32,
-                height: d.get_screen_height() as f32,
-            };
+            let src = Rectangle::new(0.0, 0.0, WIDTH as f32, HEIGHT as f32);
+            let dest = Rectangle::new(
+                0.0,
+                0.0,
+                d.get_screen_width() as f32,
+                d.get_screen_height() as f32,
+            );
 
             d.draw_texture_pro(&texture, src, dest, Vector2::zero(), 0.0, Color::WHITE);
             d.draw_fps(10, 10);

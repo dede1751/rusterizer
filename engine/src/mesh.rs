@@ -1,15 +1,8 @@
-use crate::primitives::{Float2, Float3, Tri};
+use crate::primitives::{Float2, Float3, Tri, VertexData3D};
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-
-#[derive(Debug, Clone)]
-pub struct VertexData3D {
-    pub vertices: Tri<Float3>,
-    pub normals: Tri<Float3>,
-    pub uvs: Tri<Float2>,
-}
 
 #[derive(Default, Debug, Clone)]
 pub struct Mesh {
@@ -90,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_mesh_from_obj() {
-        let mesh = Mesh::from_obj_file("../resources/cube.obj").unwrap();
+        let mesh = Mesh::from_obj_file("../resources/models/cube.obj").unwrap();
         assert_eq!(mesh.data.len(), 12);
     }
 }

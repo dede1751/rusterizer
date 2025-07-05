@@ -1,16 +1,18 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-pub mod float2;
-pub mod float3;
-pub mod quaternion;
-pub mod transform;
-pub mod triangle;
+mod float2;
+mod float3;
+mod quaternion;
+mod transform;
+mod triangle;
+mod vertex;
 
 pub use float2::Float2;
 pub use float3::Float3;
 pub use quaternion::Quaternion;
 pub use transform::Transform;
 pub use triangle::Tri;
+pub use vertex::{VertexData2D, VertexData3D};
 
 // Get Float3 from Float2
 impl From<Float2> for Float3 {

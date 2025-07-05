@@ -1,7 +1,11 @@
 use engine::scene::Scene;
 
+use crate::test_scene::TestScene;
+
+mod raster;
 mod test_scene;
 
 fn main() {
-    Scene::<640, 360>::run(&mut test_scene::TestScene::default());
+    let mut scene = TestScene::<640, 360>::default();
+    scene.run();
 }
