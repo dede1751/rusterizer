@@ -72,26 +72,31 @@ impl Tri<Float2> {
         (min_x, min_y, max_x, max_y)
     }
 
+    // Assumes outward-facing polygons are CCW-wound.
+    // Culls triangles that are too small or back faces.
+    pub fn should_cull(&self) -> bool {
+        let area = Float2::signed_area(self.vertices[0], self.vertices[1], self.vertices[2]);
+        area < 1e-6
+    }
+
+    // Convert a 2d point to barycentric coordinates within the triangle.
+    // Returns None if the point is outside the triangle. Indepented of winding order.
     pub fn to_barycentric(&self, p: Float2) -> Option<Tri<f32>> {
         let [a, b, c] = self.vertices;
         let area_abp = Float2::signed_area(a, b, p);
         let area_bcp = Float2::signed_area(b, c, p);
         let area_cap = Float2::signed_area(c, a, p);
 
-        if area_abp < 0.0 || area_bcp < 0.0 || area_cap < 0.0 {
+        if (area_abp >= 0.0) != (area_bcp >= 0.0) || (area_bcp >= 0.0) != (area_cap >= 0.0) {
             return None;
         }
 
         let total = area_abp + area_bcp + area_cap;
-        if total > 0.0 {
-            let inv_total = 1.0 / total;
-            Some(Tri::new(
-                area_bcp * inv_total,
-                area_cap * inv_total,
-                area_abp * inv_total,
-            ))
-        } else {
-            None
-        }
+        let inv_total = 1.0 / total;
+        Some(Tri::new(
+            area_bcp * inv_total,
+            area_cap * inv_total,
+            area_abp * inv_total,
+        ))
     }
 }

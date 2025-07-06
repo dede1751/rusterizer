@@ -108,6 +108,41 @@ mod tests {
     }
 
     #[test]
+    fn test_deep_hierarchy() {
+        let root = PoseGraph::root();
+
+        // The parent is rotated 90 degrees around the Y axis.
+        let parent = PoseGraph::new("parent", root.clone());
+        parent
+            .borrow_mut()
+            .apply_rotation(Quaternion::from_y_angle(FRAC_PI_2));
+
+        // The child is translated by (1, 0, 0) relative to the parent.
+        let child = PoseGraph::new("child", parent.clone());
+        child
+            .borrow_mut()
+            .apply_translation(Float3::new(1.0, 0.0, 0.0));
+
+        let p_local = Float3::ZERO;
+
+        // - The child's transform moves the point to (1, 0, 0) in the parent's space.
+        // - The parent's transform rotates this point 90 degrees around Y, moving it to (0, 0, -1).
+        // - The root is identity, so the final world position is (0, 0, -1).
+        let expected_world_pos = Float3::new(0.0, 0.0, -1.0);
+
+        let child_to_world = PoseGraph::relative_transform(&child, &root);
+        let actual_world_pos = child_to_world.apply(p_local);
+
+        assert!(
+            VectorOps::approx_eq(actual_world_pos, expected_world_pos, 1e-5),
+            "Deep hierarchy transform failed. Expected {:?}, but got {:?}",
+            expected_world_pos,
+            actual_world_pos
+        );
+    }
+
+
+    #[test]
     fn test_mesh_to_cam() {
         let root = PoseGraph::root();
 

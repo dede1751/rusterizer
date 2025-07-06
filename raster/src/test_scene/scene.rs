@@ -8,7 +8,7 @@ use engine::pose_graph::PoseGraph;
 use engine::primitives::{Float3, Quaternion};
 use engine::render_buffer::RenderBuffer;
 use engine::scene::{Scene, SceneData};
-use engine::shader::TextureShader;
+use engine::shader::{NormalShader, TextureShader};
 use engine::texture::Texture;
 
 use super::cam_controller::CamController;
@@ -24,13 +24,19 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
     fn default() -> Self {
         // Setup pose graph
         let root = PoseGraph::root();
-        let dagger_pose = PoseGraph::new("dagger", root.clone());
+        let dagger1_pose = PoseGraph::new("dagger1", root.clone());
+        let dagger2_pose = PoseGraph::new("dagger1", root.clone());
         let cam_pose = PoseGraph::new("cam", root.clone());
         cam_pose
             .borrow_mut()
             .apply_translation(Float3::new(0.0, -5.0, -9.5));
-        dagger_pose
+        dagger1_pose
             .borrow_mut()
+            .apply_translation(Float3::new(5.0, 0.0, 0.0))
+            .apply_rotation(Quaternion::from_z_angle(f32::to_radians(180.0)));
+        dagger2_pose
+            .borrow_mut()
+            .apply_translation(Float3::new(-5.0, 0.0, 0.0))
             .apply_rotation(Quaternion::from_z_angle(f32::to_radians(180.0)));
 
         // Load meshes
@@ -38,10 +44,12 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
 
         // Load shaders
         let dagger_texture = Texture::from_file("resources/textures/dagger.png").unwrap();
-        let dagger_shader = Arc::new(TextureShader::new(dagger_texture));
+        let dagger1_shader = Arc::new(TextureShader::new(dagger_texture));
+        let dagger2_shader = Arc::new(NormalShader());
 
         // Create entities
-        let dagger = Entity::new(dagger_pose, dagger_mesh.clone(), dagger_shader.clone());
+        let dagger1 = Entity::new(dagger1_pose, dagger_mesh.clone(), dagger1_shader.clone());
+        let dagger2 = Entity::new(dagger2_pose, dagger_mesh.clone(), dagger2_shader.clone());
 
         // Assemble scene data
         let mut data = SceneData {
@@ -49,7 +57,8 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
             cam_pose: cam_pose.clone(),
             ..Default::default()
         };
-        data.entities.insert("dagger".to_string(), dagger);
+        data.entities.insert("dagger1".to_string(), dagger1);
+        data.entities.insert("dagger2".to_string(), dagger2);
 
         Self {
             data,
@@ -60,7 +69,7 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
 
 impl<const WIDTH: usize, const HEIGHT: usize> Scene<WIDTH, HEIGHT> for TestScene<WIDTH, HEIGHT> {
     fn update_state(&mut self, time_delta: f32, input: &mut Input) {
-        let dagger = self.data.entities.get_mut("dagger").unwrap();
+        let dagger = self.data.entities.get_mut("dagger2").unwrap();
         dagger
             .pose
             .borrow_mut()

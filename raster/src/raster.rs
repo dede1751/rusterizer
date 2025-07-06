@@ -5,7 +5,7 @@ use std::sync::Arc;
 use engine::camera::CameraModel;
 use engine::entity::Entity;
 use engine::pose_graph::{PoseGraph, SharedPGNode};
-use engine::primitives::{Float2, Tri, VertexData2D};
+use engine::primitives::{Float2, Transform, Tri, VertexData2D};
 use engine::render_buffer::RenderBuffer;
 use engine::scene::SceneData;
 
@@ -14,28 +14,37 @@ fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
     cam_model: CameraModel<WIDTH, HEIGHT>,
     cam_pose: SharedPGNode,
 ) -> Vec<VertexData2D> {
-    let mesh_to_cam = PoseGraph::relative_transform(&entity.pose, &cam_pose);
+    let vert_to_cam = PoseGraph::relative_transform(&entity.pose, &cam_pose);
+    let norm_to_cam = Transform {
+        rotation: vert_to_cam.rotation,
+        ..Default::default()
+    };
 
     entity
         .mesh
         .data
         .par_iter()
-        .map(|v| {
-            let tri_cam = mesh_to_cam.apply_tri(&v.vertices);
-            let tri_screen = cam_model.tri_to_screen(&tri_cam);
-            let depths = Tri::new(
-                tri_cam.vertices[0].z,
-                tri_cam.vertices[1].z,
-                tri_cam.vertices[2].z,
-            );
-
-            // TODO: Transform normals
-            VertexData2D {
-                vertices: tri_screen,
-                depths,
-                normals: v.normals.clone(),
-                uvs: v.uvs.clone(),
+        .filter_map(|v| {
+            let vert_cam = vert_to_cam.apply_tri(&v.vertices);
+            if vert_cam.vertices.iter().any(|vert| vert.z <= 0.0) {
+                return None;
             }
+
+            let vert_screen = cam_model.tri_to_screen(&vert_cam);
+            if vert_screen.should_cull() {
+                return None;
+            }
+
+            Some(VertexData2D {
+                vertices: vert_screen,
+                depths: Tri::new(
+                    vert_cam.vertices[0].z,
+                    vert_cam.vertices[1].z,
+                    vert_cam.vertices[2].z,
+                ),
+                normals: norm_to_cam.apply_tri(&v.normals),
+                uvs: v.uvs.clone(),
+            })
         })
         .collect()
 }
