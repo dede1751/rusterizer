@@ -5,7 +5,7 @@ use std::sync::Arc;
 use engine::camera::CameraModel;
 use engine::entity::Entity;
 use engine::pose_graph::{PoseGraph, SharedPGNode};
-use engine::primitives::{Float2, Transform, Tri, VertexData2D};
+use engine::primitives::{FaceData2D, Float2, Transform, Tri};
 use engine::render_buffer::RenderBuffer;
 use engine::scene::SceneData;
 
@@ -13,7 +13,7 @@ fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
     entity: &Entity,
     cam_model: CameraModel<WIDTH, HEIGHT>,
     cam_pose: SharedPGNode,
-) -> Vec<VertexData2D> {
+) -> Vec<FaceData2D> {
     let vert_to_cam = PoseGraph::relative_transform(&entity.pose, &cam_pose);
     let norm_to_cam = Transform {
         rotation: vert_to_cam.rotation,
@@ -35,7 +35,7 @@ fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
                 return None;
             }
 
-            Some(VertexData2D {
+            Some(FaceData2D {
                 vertices: vert_screen,
                 depths: Tri::new(
                     vert_cam.vertices[0].z,
@@ -53,10 +53,12 @@ pub fn rasterize_scene<const WIDTH: usize, const HEIGHT: usize>(
     data: &mut SceneData<WIDTH, HEIGHT>,
     buffer: &mut RenderBuffer<WIDTH, HEIGHT>,
 ) {
+    let globals = &data.globals;
+
     for entity in data.entities.values() {
         let screen_tris = to_screen_space(entity, data.cam_model, data.cam_pose.clone());
         let shader = Arc::clone(&entity.shader);
-        let shade_fn = move |p, uv, norm, depth| shader.pixel_color(p, uv, norm, depth);
+        let shade_fn = move |p, uv, norm, depth| shader.pixel_color(p, uv, norm, depth, globals);
 
         screen_tris.par_iter().for_each(|d| {
             let (start_x, start_y, end_x, end_y) = d.vertices.bbox::<WIDTH, HEIGHT>();

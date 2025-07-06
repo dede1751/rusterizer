@@ -8,12 +8,14 @@ use crate::input::Input;
 use crate::pose_graph::SharedPGNode;
 use crate::primitives::Float3;
 use crate::render_buffer::RenderBuffer;
+use crate::shader::ShaderGlobals;
 
 #[derive(Debug, Default)]
 pub struct SceneData<const WIDTH: usize, const HEIGHT: usize> {
     pub entities: HashMap<String, Entity>,
     pub cam_model: CameraModel<WIDTH, HEIGHT>,
     pub cam_pose: SharedPGNode,
+    pub globals: ShaderGlobals,
 }
 
 pub trait Scene<const WIDTH: usize, const HEIGHT: usize> {

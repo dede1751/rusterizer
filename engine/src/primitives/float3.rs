@@ -65,6 +65,13 @@ impl_math_assign_ops!(
     DivAssign::div_assign
 );
 
+impl std::ops::Neg for Float3 {
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        Self::new(-self.x, -self.y, -self.z)
+    }
+}
+
 // Immutable indexing
 impl std::ops::Index<usize> for Float3 {
     type Output = f32;

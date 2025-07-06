@@ -4,11 +4,11 @@ use engine::camera::CameraModel;
 use engine::entity::Entity;
 use engine::input::Input;
 use engine::mesh::Mesh;
-use engine::pose_graph::PoseGraph;
+use engine::pose_graph::{PoseGraph, SharedPGNode};
 use engine::primitives::{Float3, Quaternion};
 use engine::render_buffer::RenderBuffer;
 use engine::scene::{Scene, SceneData};
-use engine::shader::{NormalShader, TextureShader};
+use engine::shader::{LitTextureShader, NormalShader};
 use engine::texture::Texture;
 
 use super::cam_controller::CamController;
@@ -18,6 +18,7 @@ use crate::raster::rasterize_scene;
 pub struct TestScene<const WIDTH: usize, const HEIGHT: usize> {
     data: SceneData<WIDTH, HEIGHT>,
     cam_controller: CamController<WIDTH, HEIGHT>,
+    sun_pose: SharedPGNode,
 }
 
 impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGHT> {
@@ -27,16 +28,22 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
         let dagger1_pose = PoseGraph::new("dagger1", root.clone());
         let dagger2_pose = PoseGraph::new("dagger1", root.clone());
         let cam_pose = PoseGraph::new("cam", root.clone());
+
+        let sun_pose = PoseGraph::new("sun", root.clone());
+        let sun_elev = Quaternion::from_x_angle(-f32::to_radians(45.0));
+        let sun_azim = Quaternion::from_y_angle(f32::to_radians(30.0));
+
+        sun_pose.borrow_mut().apply_rotation(sun_elev * sun_azim);
         cam_pose
             .borrow_mut()
             .apply_translation(Float3::new(0.0, -5.0, -9.5));
         dagger1_pose
             .borrow_mut()
-            .apply_translation(Float3::new(5.0, 0.0, 0.0))
+            .apply_translation(Float3::new(2.5, 0.0, 0.0))
             .apply_rotation(Quaternion::from_z_angle(f32::to_radians(180.0)));
         dagger2_pose
             .borrow_mut()
-            .apply_translation(Float3::new(-5.0, 0.0, 0.0))
+            .apply_translation(Float3::new(-2.5, 0.0, 0.0))
             .apply_rotation(Quaternion::from_z_angle(f32::to_radians(180.0)));
 
         // Load meshes
@@ -44,7 +51,7 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
 
         // Load shaders
         let dagger_texture = Texture::from_file("resources/textures/dagger.png").unwrap();
-        let dagger1_shader = Arc::new(TextureShader::new(dagger_texture));
+        let dagger1_shader = Arc::new(LitTextureShader::new(dagger_texture));
         let dagger2_shader = Arc::new(NormalShader());
 
         // Create entities
@@ -63,19 +70,28 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
         Self {
             data,
             cam_controller: CamController::new(cam_pose),
+            sun_pose,
         }
     }
 }
 
 impl<const WIDTH: usize, const HEIGHT: usize> Scene<WIDTH, HEIGHT> for TestScene<WIDTH, HEIGHT> {
     fn update_state(&mut self, time_delta: f32, input: &mut Input) {
-        let dagger = self.data.entities.get_mut("dagger2").unwrap();
-        dagger
+        let dagger1 = self.data.entities.get_mut("dagger1").unwrap();
+        dagger1
             .pose
+            .borrow_mut()
+            .apply_rotation(Quaternion::from_y_angle(f32::to_radians(0.5)));
+        self.sun_pose
             .borrow_mut()
             .apply_rotation(Quaternion::from_y_angle(f32::to_radians(0.5)));
 
         self.cam_controller.update_camera(time_delta, input);
+
+        let sun_to_cam = PoseGraph::relative_transform(&self.sun_pose, &self.data.cam_pose);
+
+        self.data.globals.time += time_delta;
+        self.data.globals.sun_direction_cam_space = sun_to_cam.rotation * -Float3::FORWARD;
     }
 
     fn render(&mut self, buffer: &mut RenderBuffer<WIDTH, HEIGHT>) {

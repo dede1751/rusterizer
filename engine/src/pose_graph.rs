@@ -141,7 +141,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn test_mesh_to_cam() {
         let root = PoseGraph::root();

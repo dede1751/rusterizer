@@ -2,11 +2,11 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
-use crate::primitives::{Float2, Float3, Tri, VectorOps, VertexData3D};
+use crate::primitives::{FaceData3D, Float2, Float3, Tri, VectorOps};
 
 #[derive(Default, Debug, Clone)]
 pub struct Mesh {
-    pub data: Vec<VertexData3D>,
+    pub data: Vec<FaceData3D>,
 }
 
 impl Mesh {
@@ -61,7 +61,7 @@ impl Mesh {
                             let v2 = vertex_vals[i - 1];
                             let v3 = vertex_vals[i];
 
-                            mesh.data.push(VertexData3D {
+                            mesh.data.push(FaceData3D {
                                 vertices: Tri::new(v1.0, v2.0, v3.0),
                                 normals: Tri::new(v1.1, v2.1, v3.1),
                                 uvs: Tri::new(v1.2, v2.2, v3.2),

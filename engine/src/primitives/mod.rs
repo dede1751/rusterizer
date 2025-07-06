@@ -1,16 +1,16 @@
+pub use face::{FaceData2D, FaceData3D};
 pub use float2::Float2;
 pub use float3::Float3;
 pub use quaternion::Quaternion;
 pub use transform::Transform;
 pub use triangle::Tri;
-pub use vertex::{VertexData2D, VertexData3D};
 
+mod face;
 mod float2;
 mod float3;
 mod quaternion;
 mod transform;
 mod triangle;
-mod vertex;
 
 use std::ops::{Add, Div, Mul, Sub};
 
