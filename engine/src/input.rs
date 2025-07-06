@@ -1,7 +1,7 @@
 // Input abstraction to avoid having to use raylib outside the engine crate
-use crate::primitives::Float2;
-
 use raylib::prelude::*;
+
+use crate::primitives::Float2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Key {
@@ -149,7 +149,7 @@ impl<'a> Input<'a> {
         self.rl.is_mouse_button_pressed(button.to_rl())
     }
 
-    pub fn is_holding_mouse(&self, button: MouseKey) -> bool {
+    pub fn is_mouse_held(&self, button: MouseKey) -> bool {
         self.rl.is_mouse_button_down(button.to_rl())
     }
 

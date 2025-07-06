@@ -4,32 +4,24 @@ use crate::primitives::{Float2, Float3, Tri};
 // FOV is in radians for perspective cameras, scale for orthographic cameras
 #[derive(Debug, Clone, Copy, Default)]
 pub struct CameraModel<const WIDTH: usize, const HEIGHT: usize> {
-    fov: f32,
-    perspective: bool,
+    screen_height: f32,
+    pub perspective: bool,
 }
 
 impl<const WIDTH: usize, const HEIGHT: usize> CameraModel<WIDTH, HEIGHT> {
-    pub fn perspective(fov_deg: f32) -> Self {
+    pub fn new(fov_deg: f32, perspective: bool) -> Self {
+        let fov_rad = f32::to_radians(fov_deg);
         Self {
-            fov: f32::to_radians(fov_deg),
-            perspective: true,
-        }
-    }
-
-    pub fn orthographic(scale: f32) -> Self {
-        Self {
-            fov: scale,
-            perspective: false,
+            screen_height: 2.0 * f32::tan(fov_rad / 2.0),
+            perspective,
         }
     }
 
     pub fn point_to_screen(&self, p: Float3) -> Float2 {
-        let pixels_per_world_unit = if self.perspective {
-            let screen_height = 2.0 * f32::tan(self.fov / 2.0);
-            HEIGHT as f32 / screen_height / p.z
-        } else {
-            HEIGHT as f32 / (self.fov * 2.0)
-        };
+        let mut pixels_per_world_unit = HEIGHT as f32 / self.screen_height;
+        if self.perspective {
+            pixels_per_world_unit /= p.z;
+        }
 
         Float2::from(p) * pixels_per_world_unit + Float2::new(WIDTH as f32, HEIGHT as f32) / 2.0
     }
@@ -67,7 +59,7 @@ mod tests {
 
     #[test]
     fn perspective_cam_project_center() {
-        let cam = CameraModel::<WIDTH, HEIGHT>::perspective(45.0);
+        let cam = CameraModel::<WIDTH, HEIGHT>::new(45.0, true);
         let cam_pose = PoseGraph::root();
         let world_to_cam = cam_pose.borrow().transform;
 
@@ -78,7 +70,7 @@ mod tests {
 
     #[test]
     fn orthographic_cam_project_center() {
-        let cam = CameraModel::<WIDTH, HEIGHT>::orthographic(1.0);
+        let cam = CameraModel::<WIDTH, HEIGHT>::new(45.0, false);
         let cam_pose = PoseGraph::root();
         let world_to_cam = cam_pose.borrow().transform;
 
@@ -89,7 +81,7 @@ mod tests {
 
     #[test]
     fn perspective_cam_project_offset() {
-        let cam = CameraModel::<WIDTH, HEIGHT>::perspective(45.0);
+        let cam = CameraModel::<WIDTH, HEIGHT>::new(45.0, true);
         let (cam_pose, mesh) = setup_pg();
         let mesh_to_cam = PoseGraph::relative_transform(&mesh, &cam_pose);
 
@@ -103,7 +95,7 @@ mod tests {
     #[test]
     fn orthographic_cam_project_offset() {
         let (cam_pose, mesh) = setup_pg();
-        let cam = CameraModel::<WIDTH, HEIGHT>::orthographic(1.0);
+        let cam = CameraModel::<WIDTH, HEIGHT>::new(45.0, false);
         let mesh_to_cam = PoseGraph::relative_transform(&mesh, &cam_pose);
 
         let p = Float3::new(1.0, 1.0, 0.0);

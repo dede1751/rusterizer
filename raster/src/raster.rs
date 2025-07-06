@@ -1,13 +1,13 @@
+use rayon::prelude::*;
+
+use std::sync::Arc;
+
 use engine::camera::CameraModel;
 use engine::entity::Entity;
 use engine::pose_graph::{PoseGraph, SharedPGNode};
 use engine::primitives::{Float2, Tri, VertexData2D};
 use engine::render_buffer::RenderBuffer;
 use engine::scene::SceneData;
-
-use rayon::prelude::*;
-
-use std::sync::Arc;
 
 fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
     entity: &Entity,
@@ -23,8 +23,13 @@ fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
         .map(|v| {
             let tri_cam = mesh_to_cam.apply_tri(&v.vertices);
             let tri_screen = cam_model.tri_to_screen(&tri_cam);
-            let depths = Tri::new(v.vertices[0].z, v.vertices[1].z, v.vertices[2].z);
+            let depths = Tri::new(
+                tri_cam.vertices[0].z,
+                tri_cam.vertices[1].z,
+                tri_cam.vertices[2].z,
+            );
 
+            // TODO: Transform normals
             VertexData2D {
                 vertices: tri_screen,
                 depths,

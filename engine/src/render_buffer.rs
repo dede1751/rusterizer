@@ -1,6 +1,6 @@
-use crate::primitives::Float3;
-
 use parking_lot::Mutex;
+
+use crate::primitives::Float3;
 
 #[derive(Debug)]
 pub struct RenderBuffer<const WIDTH: usize, const HEIGHT: usize> {

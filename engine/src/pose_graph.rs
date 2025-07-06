@@ -1,7 +1,7 @@
-use crate::primitives::{Float3, Quaternion, Transform};
-
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use crate::primitives::{Float3, Quaternion, Transform};
 
 // We need this for more complex hierarchies of transforms.
 pub type SharedPGNode = Rc<RefCell<PoseGraph>>;

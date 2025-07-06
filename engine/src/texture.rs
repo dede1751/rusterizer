@@ -1,9 +1,10 @@
-use crate::primitives::{Float2, Float3};
-
 use png::Decoder;
+
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::Path;
+
+use crate::primitives::{Float2, Float3};
 
 #[derive(Debug, Clone)]
 pub struct Texture {

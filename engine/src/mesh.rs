@@ -1,8 +1,8 @@
-use crate::primitives::{Float2, Float3, Tri, VertexData3D};
-
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+
+use crate::primitives::{Float2, Float3, Tri, VectorOps, VertexData3D};
 
 #[derive(Default, Debug, Clone)]
 pub struct Mesh {
@@ -34,7 +34,7 @@ impl Mesh {
                     }
                     "vn" => {
                         let nums: Vec<f32> = rest.split_whitespace().flat_map(str::parse).collect();
-                        normals.push(Float3::new(nums[0], nums[1], nums[2]));
+                        normals.push(Float3::new(nums[0], nums[1], nums[2]).normalized());
                     }
                     "vt" => {
                         let nums: Vec<f32> = rest.split_whitespace().flat_map(str::parse).collect();

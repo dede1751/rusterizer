@@ -1,13 +1,13 @@
+use raylib::prelude::*;
+
+use std::collections::HashMap;
+
 use crate::camera::CameraModel;
 use crate::entity::Entity;
 use crate::input::Input;
 use crate::pose_graph::SharedPGNode;
 use crate::primitives::Float3;
 use crate::render_buffer::RenderBuffer;
-
-use raylib::prelude::*;
-
-use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub struct SceneData<const WIDTH: usize, const HEIGHT: usize> {
@@ -17,7 +17,7 @@ pub struct SceneData<const WIDTH: usize, const HEIGHT: usize> {
 }
 
 pub trait Scene<const WIDTH: usize, const HEIGHT: usize> {
-    fn update_state(&mut self, delta: f32, input: &mut Input);
+    fn update_state(&mut self, time_delta: f32, input: &mut Input);
 
     fn render(&mut self, buffer: &mut RenderBuffer<WIDTH, HEIGHT>);
 
@@ -42,17 +42,11 @@ pub trait Scene<const WIDTH: usize, const HEIGHT: usize> {
             texture.update_texture(&frame_buffer).unwrap();
 
             let mut d = rl.begin_drawing(&thread);
-            let src = Rectangle::new(0.0, 0.0, WIDTH as f32, HEIGHT as f32);
-            let dest = Rectangle::new(
-                0.0,
-                0.0,
-                d.get_screen_width() as f32,
-                d.get_screen_height() as f32,
-            );
+            let rect = Rectangle::new(0.0, 0.0, WIDTH as f32, HEIGHT as f32);
 
-            d.draw_texture_pro(&texture, src, dest, Vector2::zero(), 0.0, Color::WHITE);
+            d.draw_texture_pro(&texture, rect, rect, Vector2::zero(), 0.0, Color::WHITE);
             d.draw_fps(10, 10);
-            render_buffer.clear(Float3::ZERO);
+            render_buffer.clear(Float3::new(0.55, 0.55, 0.55));
         }
     }
 }

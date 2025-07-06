@@ -1,8 +1,8 @@
+use std::sync::Arc;
+
 use crate::mesh::Mesh;
 use crate::pose_graph::SharedPGNode;
 use crate::shader::PixelShader;
-
-use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct Entity {
