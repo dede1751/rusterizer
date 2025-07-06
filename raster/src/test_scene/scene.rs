@@ -37,7 +37,7 @@ impl<const WIDTH: usize, const HEIGHT: usize> Default for TestScene<WIDTH, HEIGH
         let dagger_mesh = Arc::new(Mesh::from_obj_file("resources/models/dagger.obj").unwrap());
 
         // Load shaders
-        let dagger_texture = Texture::from_png_file("resources/textures/dagger.png").unwrap();
+        let dagger_texture = Texture::from_file("resources/textures/dagger.png").unwrap();
         let dagger_shader = Arc::new(TextureShader::new(dagger_texture));
 
         // Create entities

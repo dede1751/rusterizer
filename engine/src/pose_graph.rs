@@ -64,7 +64,7 @@ impl PoseGraph {
         }
 
         while let Some(node) = stack.pop() {
-            acc = acc.compose(&node.transform);
+            acc = node.transform.compose(&acc);
         }
 
         acc

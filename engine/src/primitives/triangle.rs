@@ -86,9 +86,9 @@ impl Tri<Float2> {
         if total > 0.0 {
             let inv_total = 1.0 / total;
             Some(Tri::new(
-                area_abp * inv_total,
                 area_bcp * inv_total,
                 area_cap * inv_total,
+                area_abp * inv_total,
             ))
         } else {
             None

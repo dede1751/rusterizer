@@ -15,7 +15,17 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn from_png_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
+        let extension = path.as_ref().extension().and_then(|s| s.to_str());
+
+        match extension {
+            Some("png") => Self::from_png_file(path),
+            Some("bytes") => Self::from_bytes_file(path),
+            _ => Err("Unsupported extension".into()),
+        }
+    }
+
+    fn from_png_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let file = File::open(path)?;
         let decoder = Decoder::new(BufReader::new(file));
         let mut reader = decoder.read_info()?;
@@ -30,9 +40,16 @@ impl Texture {
             _ => return Err("Unsupported color type".into()),
         };
 
+        // UV (0,0) is bottom left, PNG is top left
+        // Process the buffer by reversing the order of rows to flip the image vertically.
         let data: Vec<Float3> = buf
-            .chunks_exact(chunk_size)
-            .map(|chunk| Float3::new(chunk[0] as f32, chunk[1] as f32, chunk[2] as f32) / 255.0)
+            .chunks_exact(width * chunk_size)
+            .rev()
+            .flat_map(|row_bytes| {
+                row_bytes.chunks_exact(chunk_size).map(|chunk| {
+                    Float3::new(chunk[0] as f32, chunk[1] as f32, chunk[2] as f32) / 255.0
+                })
+            })
             .collect();
 
         if data.len() != width * height {
@@ -47,7 +64,7 @@ impl Texture {
         })
     }
 
-    pub fn from_bytes_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
+    fn from_bytes_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let mut file = File::open(path)?;
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes)?;
@@ -86,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_texture_from_png() {
-        let texture = Texture::from_png_file("../resources/textures/dagger.png");
+        let texture = Texture::from_file("../resources/textures/dagger.png");
         assert!(
             texture.is_ok(),
             "Failed to load texture: {:?}",
@@ -100,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_texture_from_bytes() {
-        let texture = Texture::from_bytes_file("../resources/textures/daveTex.bytes");
+        let texture = Texture::from_file("../resources/textures/daveTex.bytes");
         assert!(
             texture.is_ok(),
             "Failed to load texture: {:?}",
@@ -114,14 +131,14 @@ mod tests {
 
     #[test]
     fn test_sample() {
-        let texture = Texture::from_png_file("../resources/textures/dagger.png").unwrap();
+        let texture = Texture::from_file("../resources/textures/dagger.png").unwrap();
 
-        // Bottom-right corner: DimGray
-        let uv = Float2::new(510.9, 510.9) / 511.0;
+        // Bottom-right (PNG) corner: DimGray
+        let uv = Float2::new(510.9, 0.1) / 511.0;
         assert_eq!(texture.sample(uv), Float3::new(80.0, 57.0, 44.0) / 255.0);
 
-        // Top-right random pixel: Maroon
-        let uv = Float2::new(443.0, 134.0) / 511.0;
+        // Top-right (PNG) random pixel: Maroon
+        let uv = Float2::new(443.0, 377.0) / 511.0;
         assert_eq!(texture.sample(uv), Float3::new(79.0, 33.0, 33.0) / 255.0);
     }
 }

@@ -1,6 +1,6 @@
 use engine::input::{Input, Key, MouseKey};
 use engine::pose_graph::SharedPGNode;
-use engine::primitives::{Quaternion, Float3, VectorOps};
+use engine::primitives::{Float3, Quaternion, VectorOps};
 
 const SENSITIVITY: f32 = 2.0;
 const CAM_MOVE_SPEED: f32 = 15.0;
@@ -17,7 +17,11 @@ pub struct CamController<const WIDTH: usize, const HEIGHT: usize> {
 
 impl<const WIDTH: usize, const HEIGHT: usize> CamController<WIDTH, HEIGHT> {
     pub fn new(pose: SharedPGNode) -> Self {
-        Self { pose, pitch_tgt: 0.0, yaw_tgt: 0.0 }
+        Self {
+            pose,
+            pitch_tgt: 0.0,
+            yaw_tgt: 0.0,
+        }
     }
 
     pub fn update_camera(&mut self, time_delta: f32, input: &mut Input) {
@@ -32,9 +36,11 @@ impl<const WIDTH: usize, const HEIGHT: usize> CamController<WIDTH, HEIGHT> {
         }
 
         let cam_rot = self.pose.borrow().transform.rotation;
-        let tgt_rot = Quaternion::from_y_angle(self.yaw_tgt) * Quaternion::from_x_angle(self.pitch_tgt);
-        self.pose.borrow_mut().transform.rotation = cam_rot.slerp(tgt_rot, time_delta * CAM_MOVE_SPEED);
-        
+        let tgt_rot =
+            Quaternion::from_y_angle(self.yaw_tgt) * Quaternion::from_x_angle(self.pitch_tgt);
+        self.pose.borrow_mut().transform.rotation =
+            cam_rot.slerp(tgt_rot, time_delta * CAM_MOVE_SPEED);
+
         // WASD Movement
         let mut move_delta = Float3::ZERO;
         if input.is_key_held(Key::W) {
