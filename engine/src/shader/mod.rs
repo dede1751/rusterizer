@@ -1,12 +1,12 @@
+pub use depth_shader::DepthShader;
 pub use lit_texture_shader::LitTextureShader;
 pub use normal_shader::NormalShader;
 pub use texture_shader::TextureShader;
-pub use depth_shader::DepthShader;
 
+mod depth_shader;
 mod lit_texture_shader;
 mod normal_shader;
 mod texture_shader;
-mod depth_shader;
 
 use crate::primitives::{Float2, Float3};
 

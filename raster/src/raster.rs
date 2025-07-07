@@ -9,6 +9,8 @@ use engine::primitives::{FaceData2D, Float2, Transform, Tri};
 use engine::render_buffer::RenderBuffer;
 use engine::scene::SceneData;
 
+const NEAR_CLIP: f32 = -0.01;
+
 fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
     entity: &Entity,
     cam_model: CameraModel<WIDTH, HEIGHT>,
@@ -26,7 +28,7 @@ fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
         .par_iter()
         .filter_map(|v| {
             let vert_cam = vert_to_cam.apply_tri(&v.vertices);
-            if vert_cam.vertices.iter().any(|vert| vert.z >= 0.0) {
+            if vert_cam.vertices.iter().any(|vert| vert.z >= NEAR_CLIP) {
                 return None;
             }
 

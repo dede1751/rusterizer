@@ -9,7 +9,7 @@ use engine::pose_graph::{PoseGraph, SharedPGNode};
 use engine::primitives::{Float3, Quaternion};
 use engine::render_buffer::RenderBuffer;
 use engine::scene::{Scene, SceneData};
-use engine::shader::{LitTextureShader, NormalShader, DepthShader};
+use engine::shader::{DepthShader, LitTextureShader, NormalShader};
 use engine::texture::Texture;
 
 use super::cam_controller::CamController;
