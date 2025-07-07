@@ -117,9 +117,15 @@ impl VectorOps for Float3 {
 impl Float3 {
     pub const ZERO: Self = Float3::new(0.0, 0.0, 0.0);
     pub const ONE: Self = Float3::new(1.0, 1.0, 1.0);
+
+    pub const X: Self = Float3::new(1.0, 0.0, 0.0);
+    pub const Y: Self = Float3::new(0.0, 1.0, 0.0);
+    pub const Z: Self = Float3::new(0.0, 0.0, 1.0);
+
+    // RIGHT-HANDED, Y-UP: +X right, +Y up, -Z forward
     pub const RIGHT: Self = Float3::new(1.0, 0.0, 0.0);
     pub const UP: Self = Float3::new(0.0, 1.0, 0.0);
-    pub const FORWARD: Self = Float3::new(0.0, 0.0, 1.0);
+    pub const FORWARD: Self = Float3::new(0.0, 0.0, -1.0);
 
     pub const fn new(x: f32, y: f32, z: f32) -> Self {
         Float3 { x, y, z }

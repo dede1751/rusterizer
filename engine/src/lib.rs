@@ -1,4 +1,5 @@
 pub mod camera;
+pub mod coords;
 pub mod entity;
 pub mod input;
 pub mod mesh;

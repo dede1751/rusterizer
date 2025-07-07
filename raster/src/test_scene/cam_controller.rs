@@ -28,36 +28,37 @@ impl<const WIDTH: usize, const HEIGHT: usize> CamController<WIDTH, HEIGHT> {
         // Mouse Look
         if input.is_mouse_held(MouseKey::Left) {
             let mouse_delta = (input.get_mouse_delta() * SENSITIVITY) / WIDTH as f32;
-            self.yaw_tgt += mouse_delta.x;
+            self.yaw_tgt -= mouse_delta.x;
             self.pitch_tgt = (self.pitch_tgt - mouse_delta.y).clamp(MIN_PITCH, MAX_PITCH);
             input.lock_cursor();
         } else if input.is_key_down_this_frame(Key::Q) {
             input.unlock_cursor();
         }
 
-        let cam_rot = self.pose.borrow().transform.rotation;
-        let tgt_rot =
-            Quaternion::from_y_angle(self.yaw_tgt) * Quaternion::from_x_angle(self.pitch_tgt);
-        self.pose.borrow_mut().transform.rotation =
-            cam_rot.slerp(tgt_rot, time_delta * CAM_MOVE_SPEED);
+        let mut pose = self.pose.borrow_mut();
+        let yaw_rot = Quaternion::from_y_angle(self.yaw_tgt);
+        let pitch_rot = Quaternion::from_x_angle(self.pitch_tgt);
+        pose.slerp_rotation(yaw_rot * pitch_rot, time_delta * CAM_MOVE_SPEED);
 
         // WASD Movement
         let mut move_delta = Float3::ZERO;
+        let forward = pose.transform.forward_vec();
+        let right = pose.transform.right_vec();
+
         if input.is_key_held(Key::W) {
-            move_delta += Float3::FORWARD;
+            move_delta += forward;
         }
         if input.is_key_held(Key::S) {
-            move_delta -= Float3::FORWARD;
-        }
-        if input.is_key_held(Key::A) {
-            move_delta -= Float3::RIGHT;
+            move_delta -= forward;
         }
         if input.is_key_held(Key::D) {
-            move_delta += Float3::RIGHT;
+            move_delta += right;
+        }
+        if input.is_key_held(Key::A) {
+            move_delta -= right;
         }
 
-        move_delta = self.pose.borrow().transform.rotation * move_delta.normalized();
-        move_delta *= WASD_MOVE_SPEED * time_delta;
-        self.pose.borrow_mut().apply_translation(move_delta);
+        move_delta = move_delta.normalized() * WASD_MOVE_SPEED * time_delta;
+        pose.apply_translation(move_delta);
     }
 }

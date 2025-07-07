@@ -74,15 +74,15 @@ impl Quaternion {
     }
 
     pub fn from_x_angle(angle_rad: f32) -> Self {
-        Self::from_axis_angle(Float3::RIGHT, angle_rad)
+        Self::from_axis_angle(Float3::X, angle_rad)
     }
 
     pub fn from_y_angle(angle_rad: f32) -> Self {
-        Self::from_axis_angle(Float3::UP, angle_rad)
+        Self::from_axis_angle(Float3::Y, angle_rad)
     }
 
     pub fn from_z_angle(angle_rad: f32) -> Self {
-        Self::from_axis_angle(Float3::FORWARD, angle_rad)
+        Self::from_axis_angle(Float3::Z, angle_rad)
     }
 
     fn pairwise_mul(self, rhs: Self) -> f32 {

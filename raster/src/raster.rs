@@ -26,7 +26,7 @@ fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
         .par_iter()
         .filter_map(|v| {
             let vert_cam = vert_to_cam.apply_tri(&v.vertices);
-            if vert_cam.vertices.iter().any(|vert| vert.z <= 0.0) {
+            if vert_cam.vertices.iter().any(|vert| vert.z >= 0.0) {
                 return None;
             }
 
@@ -38,9 +38,9 @@ fn to_screen_space<const WIDTH: usize, const HEIGHT: usize>(
             Some(FaceData2D {
                 vertices: vert_screen,
                 depths: Tri::new(
-                    vert_cam.vertices[0].z,
-                    vert_cam.vertices[1].z,
-                    vert_cam.vertices[2].z,
+                    -vert_cam.vertices[0].z,
+                    -vert_cam.vertices[1].z,
+                    -vert_cam.vertices[2].z,
                 ),
                 normals: norm_to_cam.apply_tri(&v.normals),
                 uvs: v.uvs.clone(),
@@ -77,7 +77,7 @@ pub fn rasterize_scene<const WIDTH: usize, const HEIGHT: usize>(
                         let idx = y * WIDTH + x;
 
                         let mut pixel = buffer.pixels[idx].lock();
-                        if pixel.1 > depth {
+                        if depth < pixel.1 {
                             // Only update if unoccluded
                             let uv = ((&scaled_uv * &weights).sum()) * depth;
                             let norm = ((&scaled_norms * &weights).sum()) * depth;

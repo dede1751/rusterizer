@@ -18,6 +18,18 @@ impl Default for Transform {
 }
 
 impl Transform {
+    pub fn forward_vec(&self) -> Float3 {
+        self.rotation * Float3::FORWARD
+    }
+
+    pub fn right_vec(&self) -> Float3 {
+        self.rotation * Float3::RIGHT
+    }
+
+    pub fn up_vec(&self) -> Float3 {
+        self.rotation * Float3::UP
+    }
+
     pub fn inverse(&self) -> Self {
         let inv_rotation = self.rotation.inverse();
         let inv_scale = Float3::ONE / self.scale;

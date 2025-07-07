@@ -46,6 +46,11 @@ impl PoseGraph {
         self
     }
 
+    pub fn slerp_rotation(&mut self, rotation: Quaternion, t: f32) -> &mut Self {
+        self.transform.rotation = self.transform.rotation.slerp(rotation, t);
+        self
+    }
+
     pub fn apply_translation(&mut self, translation: Float3) -> &mut Self {
         self.transform.position += translation;
         self

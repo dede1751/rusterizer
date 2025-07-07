@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
+use crate::coords::CoordinateSystem;
 use crate::primitives::{FaceData3D, Float2, Float3, Tri, VectorOps};
 
 #[derive(Default, Debug, Clone)]
@@ -10,7 +11,10 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn from_obj_file<P: AsRef<Path>>(path: P) -> std::io::Result<Self> {
+    pub fn from_obj_file<P: AsRef<Path>>(
+        path: P,
+        coords: CoordinateSystem,
+    ) -> std::io::Result<Self> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
 
@@ -30,11 +34,13 @@ impl Mesh {
                 match prefix {
                     "v" => {
                         let nums: Vec<f32> = rest.split_whitespace().flat_map(str::parse).collect();
-                        vertices.push(Float3::new(nums[0], nums[1], nums[2]));
+                        let v = Float3::new(nums[0], nums[1], nums[2]);
+                        vertices.push(coords.to_engine_coords(v));
                     }
                     "vn" => {
                         let nums: Vec<f32> = rest.split_whitespace().flat_map(str::parse).collect();
-                        normals.push(Float3::new(nums[0], nums[1], nums[2]).normalized());
+                        let v = Float3::new(nums[0], nums[1], nums[2]).normalized();
+                        normals.push(coords.to_engine_coords(v));
                     }
                     "vt" => {
                         let nums: Vec<f32> = rest.split_whitespace().flat_map(str::parse).collect();
@@ -80,10 +86,11 @@ impl Mesh {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::coords::ENGINE;
 
     #[test]
     fn test_mesh_from_obj() {
-        let mesh = Mesh::from_obj_file("../resources/models/cube.obj").unwrap();
+        let mesh = Mesh::from_obj_file("../resources/models/cube.obj", ENGINE).unwrap();
         assert_eq!(mesh.data.len(), 12);
     }
 }
